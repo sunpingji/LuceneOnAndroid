@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -41,7 +42,7 @@ import java.util.ServiceConfigurationError;
  * @lucene.internal
  */
 public final class SPIClassIterator<S> implements Iterator<Class<? extends S>> {
-  private static final String META_INF_SERVICES = "META-INF/services/";
+  private static final String META_INF_SERVICES = "/assets/META-INF/services/";
 
   private final Class<S> clazz;
   private final ClassLoader loader;
@@ -85,15 +86,24 @@ public final class SPIClassIterator<S> implements Iterator<Class<? extends S>> {
   }
   
   private SPIClassIterator(Class<S> clazz, ClassLoader loader) {
+
     this.clazz = Objects.requireNonNull(clazz, "clazz");
     this.loader = Objects.requireNonNull(loader, "loader");
-    try {
-      final String fullName = META_INF_SERVICES + clazz.getName();
-      this.profilesEnum = loader.getResources(fullName);
-    } catch (IOException ioe) {
-      throw new ServiceConfigurationError("Error loading SPI profiles for type " + clazz.getName() + " from classpath", ioe);
-    }
+    final String fullName = META_INF_SERVICES + clazz.getName();
+      this.profilesEnum =
+              Collections.enumeration(
+                      Arrays.asList(new URL[]{getClass().getResource(fullName)}));
     this.linesIterator = Collections.<String>emptySet().iterator();
+
+//    this.clazz = Objects.requireNonNull(clazz, "clazz");
+//    this.loader = Objects.requireNonNull(loader, "loader");
+//    try {
+//      final String fullName = META_INF_SERVICES + clazz.getName();
+//      this.profilesEnum = loader.getResources(fullName);
+//    } catch (IOException ioe) {
+//      throw new ServiceConfigurationError("Error loading SPI profiles for type " + clazz.getName() + " from classpath", ioe);
+//    }
+//    this.linesIterator = Collections.<String>emptySet().iterator();
   }
   
   private boolean loadNextProfile() {
