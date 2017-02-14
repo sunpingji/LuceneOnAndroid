@@ -232,7 +232,7 @@ public abstract class StringHelper {
     byte[] maskBytes128 = new byte[16];
     Arrays.fill(maskBytes128, (byte) 0xff);
     mask128 = new BigInteger(1, maskBytes128);
-    
+
     String prop = System.getProperty("tests.seed");
 
     // State for xorshift128:
@@ -248,30 +248,18 @@ public abstract class StringHelper {
       x0 = Long.parseLong(prop, 16);
       x1 = x0;
     } else {
-      // seed from /dev/urandom, if its available
-      try (DataInputStream is = new DataInputStream(Files.newInputStream(Paths.get("/dev/urandom")))) {
-        x0 = is.readLong();
-        x1 = is.readLong();
-      } catch (Exception unavailable) {
-        // may not be available on this platform
-        // fall back to lower quality randomness from 3 different sources:
-        x0 = System.nanoTime();
-        x1 = StringHelper.class.hashCode() << 32;
-        
-        StringBuilder sb = new StringBuilder();
-        // Properties can vary across JVM instances:
-        try {
-          Properties p = System.getProperties();
-          for (String s: p.stringPropertyNames()) {
-            sb.append(s);
-            sb.append(p.getProperty(s));
-          }
-          x1 |= sb.toString().hashCode();
-        } catch (SecurityException notallowed) {
-          // getting Properties requires wildcard read-write: may not be allowed
-          x1 |= StringBuffer.class.hashCode();
-        }
+      // Randomess from 3 different sources:
+      x0 = System.nanoTime();
+      x1 = StringHelper.class.hashCode() << 32;
+      StringBuilder sb = new StringBuilder();
+      // Properties can vary across JVM instances:
+      Properties p = System.getProperties();
+      for (String s: p.stringPropertyNames()) {
+        sb.append(s);
+        sb.append(p.getProperty(s));
       }
+      x1 |= sb.toString().hashCode();
+      // TODO: maybe read from /dev/urandom when it's available?
     }
 
     // Use a few iterations of xorshift128 to scatter the seed
@@ -284,7 +272,7 @@ public abstract class StringHelper {
       s1 ^= s1 << 23; // a
       x1 = s1 ^ s0 ^ (s1 >>> 17) ^ (s0 >>> 26); // b, c
     }
-    
+
     // 64-bit unsigned mask
     byte[] maskBytes64 = new byte[8];
     Arrays.fill(maskBytes64, (byte) 0xff);

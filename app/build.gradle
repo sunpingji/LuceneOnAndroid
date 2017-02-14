@@ -43,7 +43,5 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:25.1.1'
-    compile group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '5.5.3'
-    compile group: 'org.apache.lucene', name: 'lucene-queryparser', version: '5.5.3'
     testCompile 'junit:junit:4.12'
 }
